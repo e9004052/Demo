@@ -51,6 +51,14 @@ final class ColorsViewModel: ColorsOutput {
             }
     }
 
+    func colorsDidToggleDummy() {
+        if router.hasDummy {
+            router.detachDummy()
+        } else {
+            _ = router.attachDummy()
+        }
+    }
+
     func colorsDidSelectBack() {
         router.goBack()
     }

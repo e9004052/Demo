@@ -17,16 +17,22 @@ protocol ColorsParentRouter {
 }
 
 protocol ColorsRouter {
+    var hasDummy: Bool { get }
+
     func goBack()
 
     func attachColorDisplay(_ color: Color) -> ColorDisplayOutput
 
     func attachColorEntry(_ color: Color, forId id: UUID) -> ColorEntryOutput
     func detachColorEntry(withId id: UUID)
+
+    func attachDummy() -> ColorDummyOutput
+    func detachDummy()
 }
 
 final class ColorsViewState: ObservableObject {
     @Published var routes: [ColorsRoute] = []
+    @Published fileprivate(set) var dummyView: ColorDummyView?
     
     fileprivate(set) var colorDisplay: ColorDisplayView?
     fileprivate var colorEntries: [UUID: ColorEntryView] = [:]
@@ -36,7 +42,12 @@ final class ColorsViewState: ObservableObject {
     }
 }
 
-final class AppColorsRouter: ColorsRouter, ColorDisplayParentRouter, ColorEntryParentRouter {
+final class AppColorsRouter: ColorsRouter,
+                             ColorDisplayParentRouter,
+                             ColorEntryParentRouter,
+                             ColorDummyParentRouter {
+    var hasDummy: Bool { viewState.dummyView != nil }
+
     private let parent: ColorsParentRouter
     private let viewState: ColorsViewState
 
@@ -73,6 +84,18 @@ final class AppColorsRouter: ColorsRouter, ColorDisplayParentRouter, ColorEntryP
 
     func detachColorEntry(withId id: UUID) {
         viewState.colorEntries.removeValue(forKey: id)
+    }
+
+    func attachDummy() -> ColorDummyOutput {
+        let dependency = ColorDummyDependency()
+        let builder = ColorDummyBuilder(dependency: dependency, parentRouter: self)
+        let result = builder.build()
+        viewState.dummyView = result.view
+        return result.output
+    }
+
+    func detachDummy() {
+        viewState.dummyView = nil
     }
 
     // MARK: - ColorDisplayParentRouter

@@ -41,6 +41,8 @@ struct ColorsView: View {
                     backButton
                     addButton
                 }
+                toggleDummyButton
+                viewState.dummyView
             }
             .navigationDestination(for: ColorsRoute.self) { route in
                 switch route {
@@ -60,6 +62,11 @@ struct ColorsView: View {
                 }
             }
         }
+    }
+
+    private var toggleDummyButton: some View {
+        Button("Toggle dummy", action: { viewModel.colorsDidToggleDummy() })
+            .padding(.top)
     }
 
     private var addButton: some View {
